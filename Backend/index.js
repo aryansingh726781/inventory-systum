@@ -31,9 +31,22 @@ const Product = mongoose.model('Product', productSchema);
 
 //,............Order models...................................
 const orderSchema = new mongoose.Schema({
-    userId: mongoose.Schema.Types.ObjectId,
-    productIds: [mongoose.Schema.Types.ObjectId],
-    status: String // "ordered", "shipped", "delivered"
+    // userId: mongoose.Schema.Types.ObjectId,
+    // productIds: [mongoose.Schema.Types.ObjectId],
+    // status: String // "ordered", "shipped", "delivered"
+
+    userId: {
+        type: String,
+        required: true
+    },
+    productIds: [{
+        type: String
+    }],
+    status: {
+        type: String,
+        default: 'ordered'
+    }
+
 });
 
 const Order = mongoose.model('Order', orderSchema);
@@ -151,23 +164,45 @@ app.post('/reviewProduct/:productId', async (req, res) => {
 
 
 
+// app.post('/orderProduct', async (req, res) => {
+//     try {
+//         const { userId, productIds } = req.body; // Array of product IDs
+
+//         const order = new Order({
+//             userId,
+//             productIds,
+//             status: 'ordered' // Default status
+//         });
+
+//         await order.save();
+//         res.status(201).send('Order placed successfully');
+//     } catch (error) {
+//         res.status(500).send('Server error');
+//     }
+// });
+
+
 app.post('/orderProduct', async (req, res) => {
     try {
-        const { userId, productIds } = req.body; // Array of product IDs
+        const { userId, productIds } = req.body;
 
-        const order = new Order({
+        if (!userId || !productIds || productIds.length === 0) {
+            return res.status(400).send('Incomplete data');
+        }
+
+        const newOrder = new Order({
             userId,
             productIds,
-            status: 'ordered' // Default status
         });
 
-        await order.save();
+        const savedOrder = await newOrder.save();
         res.status(201).send('Order placed successfully');
+
     } catch (error) {
+        console.error(error);
         res.status(500).send('Server error');
     }
 });
-
 
 
 
